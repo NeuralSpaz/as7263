@@ -17,7 +17,7 @@ type AS7263 struct {
 	debug bool
 }
 
-func (a *AS7262) Close() error {
+func (a *AS7263) Close() error {
 	a.LEDoff()
 	return a.dev.Close()
 }
