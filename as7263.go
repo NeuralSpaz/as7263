@@ -17,6 +17,11 @@ type AS7263 struct {
 	debug bool
 }
 
+func (a *AS7262) Close() error {
+	a.LEDoff()
+	return a.dev.Close()
+}
+
 // Spectrum (610nm, 680nm, 730nm, 760nm, 810nm, 860nm)
 type Spectrum struct {
 	Rraw, Sraw, Traw, Uraw, Vraw, Wraw uint16
