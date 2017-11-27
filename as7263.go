@@ -24,9 +24,10 @@ func (a *AS7263) Close() error {
 
 // Spectrum (610nm, 680nm, 730nm, 760nm, 810nm, 860nm)
 type Spectrum struct {
-	Counts   []Count   `json:"count"`
-	Time     time.Time `json:"time"`
-	Unixnano int64     `json:"unixnano"`
+	Counts            []Count   `json:"count"`
+	Time              time.Time `json:"time"`
+	SensorTemperature byte      `json:"sensorTemperature"`
+	Unixnano          int64     `json:"unixnano"`
 }
 
 type Count struct {
@@ -273,7 +274,7 @@ func (a *AS7263) ReadAll() (Spectrum, error) {
 			log.Println(err)
 		}
 	}
-
+	now := time.Now()
 	rh, err := a.virtualRegisterRead(0x08)
 	if err != nil {
 		return Spectrum{}, err
@@ -446,16 +447,21 @@ func (a *AS7263) ReadAll() (Spectrum, error) {
 	wcal32 := binary.BigEndian.Uint32([]byte{wcal0, wcal1, wcal2, wcal3})
 	wcal := math.Float32frombits(wcal32)
 
+	tempraw, err := a.virtualRegisterRead(0x06)
+	if err != nil {
+		return Spectrum{}, err
+	}
 	// Spectrum (610nm, 680nm, 730nm, 760nm, 810nm, 860nm)
-	now := time.Now()
-	return Spectrum{Time: now, Unixnano: now.UnixNano(), Counts: []Count{
-		{Wavelength: 610, Value: float64(rcal), Raw: r},
-		{Wavelength: 680, Value: float64(scal), Raw: s},
-		{Wavelength: 730, Value: float64(tcal), Raw: t},
-		{Wavelength: 760, Value: float64(ucal), Raw: u},
-		{Wavelength: 810, Value: float64(vcal), Raw: v},
-		{Wavelength: 860, Value: float64(wcal), Raw: w},
-	}}, nil
+
+	return Spectrum{Time: now, Unixnano: now.UnixNano(), SensorTemperature: tempraw,
+		Counts: []Count{
+			{Wavelength: 610, Value: float64(rcal), Raw: r},
+			{Wavelength: 680, Value: float64(scal), Raw: s},
+			{Wavelength: 730, Value: float64(tcal), Raw: t},
+			{Wavelength: 760, Value: float64(ucal), Raw: u},
+			{Wavelength: 810, Value: float64(vcal), Raw: v},
+			{Wavelength: 860, Value: float64(wcal), Raw: w},
+		}}, nil
 
 	// return Spectrum{r, s, t, u, v, w, rcal, scal, tcal, ucal, vcal, wcal}, nil
 	// return Spectrum{}, nil
