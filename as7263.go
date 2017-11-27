@@ -24,7 +24,7 @@ func (a *AS7263) Close() error {
 
 // Spectrum (610nm, 680nm, 730nm, 760nm, 810nm, 860nm)
 type Spectrum struct {
-	count []Count `json:"count"`
+	Counts []Count `json:"count"`
 }
 
 type Count struct {
