@@ -211,7 +211,7 @@ func (a *AS7263) setMode(mode uint8) error {
 func (a *AS7263) dataReady() (bool, error) {
 	// fmt.Println("dataReady?")
 	var control byte
-	err := retry(10, time.Millisecond*10*50, func() (err error) {
+	err := retry(100, time.Millisecond, func() (err error) {
 		control, err = a.virtualRegisterRead(0x04)
 		return
 	})
