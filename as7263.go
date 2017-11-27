@@ -24,8 +24,13 @@ func (a *AS7263) Close() error {
 
 // Spectrum (610nm, 680nm, 730nm, 760nm, 810nm, 860nm)
 type Spectrum struct {
-	Rraw, Sraw, Traw, Uraw, Vraw, Wraw uint16
-	Rcal, Scal, Tcal, Ucal, rcal, Wcal float32
+	count []Count `json:"count"`
+}
+
+type Count struct {
+	Wavelength float64 `json:"wavelength"`
+	Value      float64 `json:"value"`
+	Raw        uint16  `json:"raw"`
 }
 
 func NewSensor(mux i2cmux.Multiplexer, port uint8, opts ...func(*AS7263) error) (*AS7263, error) {
@@ -425,7 +430,17 @@ func (a *AS7263) ReadAll() (Spectrum, error) {
 	wcal32 := binary.BigEndian.Uint32([]byte{wcal0, wcal1, wcal2, wcal3})
 	wcal := math.Float32frombits(wcal32)
 
-	return Spectrum{r, s, t, u, v, w, rcal, scal, tcal, ucal, vcal, wcal}, nil
+	// Spectrum (610nm, 680nm, 730nm, 760nm, 810nm, 860nm)
+	return Spectrum{[]Count{
+		{Wavelength: 610, Value: float64(rcal), Raw: r},
+		{Wavelength: 680, Value: float64(scal), Raw: s},
+		{Wavelength: 730, Value: float64(tcal), Raw: t},
+		{Wavelength: 760, Value: float64(ucal), Raw: u},
+		{Wavelength: 810, Value: float64(vcal), Raw: v},
+		{Wavelength: 860, Value: float64(wcal), Raw: w},
+	}}, nil
+
+	// return Spectrum{r, s, t, u, v, w, rcal, scal, tcal, ucal, vcal, wcal}, nil
 	// return Spectrum{}, nil
 }
 
