@@ -24,7 +24,9 @@ func (a *AS7263) Close() error {
 
 // Spectrum (610nm, 680nm, 730nm, 760nm, 810nm, 860nm)
 type Spectrum struct {
-	Counts []Count `json:"count"`
+	Counts   []Count   `json:"count"`
+	Time     time.Time `json:"time"`
+	Unixnano int64     `json:"unixnano"`
 }
 
 type Count struct {
@@ -440,7 +442,8 @@ func (a *AS7263) ReadAll() (Spectrum, error) {
 	wcal := math.Float32frombits(wcal32)
 
 	// Spectrum (610nm, 680nm, 730nm, 760nm, 810nm, 860nm)
-	return Spectrum{[]Count{
+	now := time.Now()
+	return Spectrum{Time: now, Unixnano: now.UnixNano(), Counts: []Count{
 		{Wavelength: 610, Value: float64(rcal), Raw: r},
 		{Wavelength: 680, Value: float64(scal), Raw: s},
 		{Wavelength: 730, Value: float64(tcal), Raw: t},
